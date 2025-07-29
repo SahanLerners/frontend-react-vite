@@ -20,8 +20,8 @@ const Search: React.FC = () => {
     brand: searchParams.get('brand') || '',
     minPrice: searchParams.get('minPrice') || '',
     maxPrice: searchParams.get('maxPrice') || '',
-    sortBy: searchParams.get('sortBy') || 'relevance',
-    sortOrder: searchParams.get('sortOrder') || 'desc',
+    sortBy: searchParams.get('sort') || 'relevance',
+    sortOrder: searchParams.get('order') || 'desc',
   });
 
   const { products, loading, pagination } = useSelector((state: RootState) => state.products);
@@ -273,7 +273,7 @@ const Search: React.FC = () => {
                         }}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="relevance-desc">Most Relevant</option>
+                        <option value="createdAt-desc">Most Relevant</option>
                         <option value="createdAt-desc">Newest First</option>
                         <option value="createdAt-asc">Oldest First</option>
                         <option value="price-asc">Price: Low to High</option>
