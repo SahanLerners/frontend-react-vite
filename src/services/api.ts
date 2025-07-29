@@ -233,6 +233,23 @@ class ApiService {
   async sendContactMessage(data: any) {
     return this.post('/contact', data);
   }
+
+  // Admin Stats
+  async getProductStats() {
+    return this.get('/products/admin/stats');
+  }
+
+  async getOrderStats() {
+    return this.get('/orders/admin/stats');
+  }
+
+  async getUserStats() {
+    return this.get('/users/stats');
+  }
+
+  async getCategoryStats() {
+    return this.get('/categories/stats');
+  }
 }
 
 export default new ApiService();

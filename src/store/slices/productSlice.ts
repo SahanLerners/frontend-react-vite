@@ -25,6 +25,13 @@ export const fetchProducts = createAsyncThunk(
   'products/fetchProducts',
   async (params: any = {}, { rejectWithValue }) => {
     try {
+      // Convert sortBy and sortOrder to sort and order for API compatibility
+      if (params.sortBy && params.sortOrder) {
+        params.sort = params.sortBy;
+        params.order = params.sortOrder;
+        delete params.sortBy;
+        delete params.sortOrder;
+      }
       const response: ProductsResponse = await apiService.getProducts(params) as ProductsResponse;
       return response;
     } catch (error: any) {
@@ -61,6 +68,13 @@ export const searchProducts = createAsyncThunk(
   'products/searchProducts',
   async (params: any, { rejectWithValue }) => {
     try {
+      // Convert sortBy and sortOrder to sort and order for API compatibility
+      if (params.sortBy && params.sortOrder) {
+        params.sort = params.sortBy;
+        params.order = params.sortOrder;
+        delete params.sortBy;
+        delete params.sortOrder;
+      }
       const response: ProductsResponse = await apiService.searchProducts(params) as ProductsResponse;
       return response;
     } catch (error: any) {

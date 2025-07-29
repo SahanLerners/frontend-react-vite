@@ -24,6 +24,7 @@ import Profile from './pages/Profile';
 import Search from "./pages/Search.tsx";
 import Contact from './pages/Contact.tsx';
 import Register from "./pages/auth/Register.tsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
 
 const AppContent: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -102,6 +103,7 @@ const AppContent: React.FC = () => {
           {/* Auth Routes (no layout) */}
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="forgot-password" element={<ForgotPassword />} />
         </Routes>
 
         <Toaster

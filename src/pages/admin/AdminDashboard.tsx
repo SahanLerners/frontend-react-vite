@@ -6,7 +6,6 @@ import {
   Package, 
   ShoppingBag, 
   FolderOpen,
-  BarChart3,
   Menu,
   X
 } from 'lucide-react';
@@ -28,7 +27,6 @@ const AdminDashboard: React.FC = () => {
     { name: 'Products', href: '/admin/products', icon: Package, current: location.pathname === '/admin/products' },
     { name: 'Categories', href: '/admin/categories', icon: FolderOpen, current: location.pathname === '/admin/categories' },
     { name: 'Orders', href: '/admin/orders', icon: ShoppingBag, current: location.pathname === '/admin/orders' },
-    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3, current: location.pathname === '/admin/analytics' },
   ];
 
   return (
@@ -101,7 +99,6 @@ const AdminDashboard: React.FC = () => {
             <Route path="products" element={<ProductManagement />} />
             <Route path="categories" element={<CategoryManagement />} />
             <Route path="orders" element={<OrderManagement />} />
-            <Route path="analytics" element={<div className="p-8">Analytics - Coming Soon</div>} />
           </Routes>
         </main>
       </div>

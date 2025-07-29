@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { 
   Users, 
   Package, 
@@ -6,10 +7,12 @@ import {
   DollarSign,
   TrendingUp,
   TrendingDown,
-  Eye,
   Calendar
 } from 'lucide-react';
+import { AppDispatch } from '../../store/store';
+import apiService from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import toast from 'react-hot-toast';
 
 interface StatsCard {
   title: string;
@@ -20,53 +23,105 @@ interface StatsCard {
   color: string;
 }
 
+interface DashboardStats {
+  totalUsers: number;
+  totalProducts: number;
+  totalOrders: number;
+  totalRevenue: number;
+  userGrowth: number;
+  productGrowth: number;
+  orderGrowth: number;
+  revenueGrowth: number;
+}
+
+interface RecentOrder {
+  _id: string;
+  orderNumber: string;
+  shippingAddress: {
+    firstName: string;
+    lastName: string;
+  };
+  totalAmount: number;
+  orderStatus: string;
+  createdAt: string;
+}
+
+interface TopProduct {
+  _id: string;
+  name: string;
+  totalSold: number;
+  totalRevenue: number;
+}
 const DashboardOverview: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<StatsCard[]>([]);
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
 
   useEffect(() => {
-    // Simulate API call
     const fetchStats = async () => {
       setLoading(true);
       try {
-        // Mock data - replace with actual API calls
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const [productStats, orderStats, userStats] = await Promise.all([
+          apiService.getProductStats(),
+          apiService.getOrderStats(),
+          apiService.getUserStats(),
+        ]);
+
+        const dashboardStats: DashboardStats = {
+          totalUsers: userStats.data.totalUsers || 0,
+          totalProducts: productStats.data.totalProducts || 0,
+          totalOrders: orderStats.data.totalOrders || 0,
+          totalRevenue: orderStats.data.totalRevenue || 0,
+          userGrowth: userStats.data.growthPercentage || 0,
+          productGrowth: productStats.data.growthPercentage || 0,
+          orderGrowth: orderStats.data.orderGrowthPercentage || 0,
+          revenueGrowth: orderStats.data.revenueGrowthPercentage || 0,
+        };
+
         setStats([
           {
             title: 'Total Users',
-            value: '1,234',
-            change: '+12%',
-            changeType: 'increase',
+            value: dashboardStats.totalUsers.toLocaleString(),
+            change: `${dashboardStats.userGrowth >= 0 ? '+' : ''}${dashboardStats.userGrowth.toFixed(1)}%`,
+            changeType: dashboardStats.userGrowth >= 0 ? 'increase' : 'decrease',
             icon: Users,
             color: 'bg-blue-500',
           },
           {
             title: 'Total Products',
-            value: '856',
-            change: '+8%',
-            changeType: 'increase',
+            value: dashboardStats.totalProducts.toLocaleString(),
+            change: `${dashboardStats.productGrowth >= 0 ? '+' : ''}${dashboardStats.productGrowth.toFixed(1)}%`,
+            changeType: dashboardStats.productGrowth >= 0 ? 'increase' : 'decrease',
             icon: Package,
             color: 'bg-green-500',
           },
           {
             title: 'Total Orders',
-            value: '2,468',
-            change: '+15%',
-            changeType: 'increase',
+            value: dashboardStats.totalOrders.toLocaleString(),
+            change: `${dashboardStats.orderGrowth >= 0 ? '+' : ''}${dashboardStats.orderGrowth.toFixed(1)}%`,
+            changeType: dashboardStats.orderGrowth >= 0 ? 'increase' : 'decrease',
             icon: ShoppingBag,
             color: 'bg-purple-500',
           },
           {
             title: 'Revenue',
-            value: '$45,678',
-            change: '-3%',
-            changeType: 'decrease',
+            value: `$${dashboardStats.totalRevenue.toLocaleString()}`,
+            change: `${dashboardStats.revenueGrowth >= 0 ? '+' : ''}${dashboardStats.revenueGrowth.toFixed(1)}%`,
+            changeType: dashboardStats.revenueGrowth >= 0 ? 'increase' : 'decrease',
             icon: DollarSign,
             color: 'bg-yellow-500',
           },
         ]);
+
+        // Set recent orders and top products from API response
+        setRecentOrders(orderStats.data.recentOrders || []);
+        setTopProducts(productStats.data.topProducts || []);
+
       } catch (error) {
-        console.error('Failed to fetch stats:', error);
+        console.error('Failed to fetch dashboard stats:', error);
+        toast.error('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -74,22 +129,6 @@ const DashboardOverview: React.FC = () => {
 
     fetchStats();
   }, []);
-
-  const recentOrders = [
-    { id: 'ORD-001', customer: 'John Doe', amount: '$299.99', status: 'completed', date: '2024-01-15' },
-    { id: 'ORD-002', customer: 'Jane Smith', amount: '$599.99', status: 'pending', date: '2024-01-15' },
-    { id: 'ORD-003', customer: 'Mike Johnson', amount: '$899.99', status: 'processing', date: '2024-01-14' },
-    { id: 'ORD-004', customer: 'Sarah Wilson', amount: '$199.99', status: 'shipped', date: '2024-01-14' },
-    { id: 'ORD-005', customer: 'Tom Brown', amount: '$1,299.99', status: 'completed', date: '2024-01-13' },
-  ];
-
-  const topProducts = [
-    { name: 'MacBook Pro 16"', sales: 45, revenue: '$89,999' },
-    { name: 'Dell XPS 13', sales: 38, revenue: '$45,999' },
-    { name: 'HP Spectre x360', sales: 32, revenue: '$38,999' },
-    { name: 'Lenovo ThinkPad X1', sales: 28, revenue: '$33,999' },
-    { name: 'ASUS ROG Strix', sales: 25, revenue: '$29,999' },
-  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -171,19 +210,23 @@ const DashboardOverview: React.FC = () => {
           </div>
           <div className="p-6">
             <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              {recentOrders.slice(0, 5).map((order) => (
+                <div key={order._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm font-medium text-gray-900">{order.id}</p>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
-                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      <p className="text-sm font-medium text-gray-900">#{order.orderNumber}</p>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.orderStatus)}`}>
+                        {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600">{order.customer}</p>
+                    <p className="text-sm text-gray-600">
+                      {order.shippingAddress.firstName} {order.shippingAddress.lastName}
+                    </p>
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm font-semibold text-gray-900">{order.amount}</p>
-                      <p className="text-xs text-gray-500">{order.date}</p>
+                      <p className="text-sm font-semibold text-gray-900">${order.totalAmount.toFixed(2)}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -204,13 +247,13 @@ const DashboardOverview: React.FC = () => {
           </div>
           <div className="p-6">
             <div className="space-y-4">
-              {topProducts.map((product, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              {topProducts.slice(0, 5).map((product) => (
+                <div key={product._id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{product.name}</p>
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-sm text-gray-600">{product.sales} sales</p>
-                      <p className="text-sm font-semibold text-gray-900">{product.revenue}</p>
+                      <p className="text-sm text-gray-600">{product.totalSold} sales</p>
+                      <p className="text-sm font-semibold text-gray-900">${product.totalRevenue.toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
@@ -220,30 +263,6 @@ const DashboardOverview: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
-            <div className="text-center">
-              <Package className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-700">Add New Product</p>
-            </div>
-          </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
-            <div className="text-center">
-              <Users className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-700">Manage Users</p>
-            </div>
-          </button>
-          <button className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
-            <div className="text-center">
-              <Eye className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm font-medium text-gray-700">View Reports</p>
-            </div>
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

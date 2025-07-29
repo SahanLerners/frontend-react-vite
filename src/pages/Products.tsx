@@ -21,8 +21,8 @@ const Products: React.FC = () => {
     maxPrice: searchParams.get('maxPrice') || '',
     featured: searchParams.get('featured') === 'true',
     search: searchParams.get('search') || '',
-    sortBy: searchParams.get('sortBy') || 'createdAt',
-    sortOrder: searchParams.get('sortOrder') || 'desc',
+    sortBy: searchParams.get('sort') || 'createdAt',
+    sortOrder: searchParams.get('order') || 'desc',
   });
 
   const { products, loading, pagination} = useSelector((state: RootState) => state.products);
